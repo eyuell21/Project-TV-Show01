@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>TV Show Project | Eyuel Abraham (eyuell21)</title>
     <link href="style.css" rel="stylesheet" />
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
@@ -12,9 +12,14 @@
     <header>
       <h1>TV Show Episode Guide</h1>
 
+      <!-- Show select dropdown -->
+      <select id="show-select" aria-label="Select TV show">
+        <option value="">Loading shows...</option>
+      </select>
+
       <!-- Search bar -->
       <input
-        type="text"
+        type="search"
         id="search-input"
         placeholder="Search episodes..."
         aria-label="Search episodes"
@@ -23,20 +28,18 @@
       <!-- Episode select dropdown -->
       <select id="episode-select" aria-label="Select episode">
         <option value="all">Show all episodes</option>
-        <!-- options will be filled dynamically in JS -->
       </select>
 
       <!-- Search result count -->
-      <p id="search-count"></p>
+      <p id="search-count" aria-live="polite"></p>
     </header>
 
     <!-- Episode display container -->
     <main>
-      <div id="filmCard-container" class="filmCard-container"></div>
+      <div id="filmCardContainer" class="filmCard-container"></div>
     </main>
 
     <!-- Scripts -->
-    <script src="episodes.js"></script>
     <script src="script.js"></script>
   </body>
 </html>
