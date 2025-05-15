@@ -9,34 +9,26 @@
   </head>
 
   <body>
-    <header>
-      <h1>TV Show Episode Guide</h1>
+    <!--div element added for the searching section-->
+    <div id="search-bar" class="search-bar">
+      <label>Search <input type="search" id="search-input" name="search-input" placeholder="Search the Movie" /> 🔍 </label>
+      <label><p id="counter"></p></label>
+      <p id="counter"></p>
+      <label id="select-movie">
+        Select a Movie:
+        <select name="Movie" id="movie"></select> 
+      </label>
+    </div>
+    <div id="filmCard-container" class="filmCard-container">
+    </div>
 
-      <!-- Search bar -->
-      <input
-        type="text"
-        id="search-input"
-        placeholder="Search episodes..."
-        aria-label="Search episodes"
-      />
+    <div id="error-message"></div>
 
-      <!-- Episode select dropdown -->
-      <select id="episode-select" aria-label="Select episode">
-        <option value="all">Show all episodes</option>
-        <!-- options will be filled dynamically in JS -->
-      </select>
-
-      <!-- Search result count -->
-      <p id="search-count"></p>
-    </header>
-
-    <!-- Episode display container -->
-    <main>
-      <div id="filmCard-container" class="filmCard-container"></div>
-    </main>
-
-    <!-- Scripts -->
+    <!-- Loads a provided function called getAllEpisodes() which returns all episodes -->
     <script src="episodes.js"></script>
+    <!-- <script src="episodes.js"></script> -->
+
+    <!-- Loads YOUR javascript code -->
     <script src="script.js"></script>
   </body>
 </html>

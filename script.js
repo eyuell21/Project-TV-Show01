@@ -1,104 +1,125 @@
-function setup() {
-  const allEpisodes = getAllEpisodes();
-  const root = document.getElementById("root");
 
-  // Created and added search input
-  const searchInput = document.createElement("input");
-  searchInput.type = "text";
-  searchInput.placeholder = "Search episodes...";
-  root.prepend(searchInput);
+// api for game of thrones from TVmaze.com
 
-  // Created and added dropdown
-  const select = document.createElement("select");
-  const defaultOption = document.createElement("option");
-  defaultOption.value = "all";
-  defaultOption.textContent = "Select an episode...";
-  select.appendChild(defaultOption);
-  allEpisodes.forEach((ep) => {
-    const option = document.createElement("option");
-    const season = ep.season.toString().padStart(2, "0");
-    const number = ep.number.toString().padStart(2, "0");
-    option.value = ep.id;
-    option.textContent = `S${season}E${number} - ${ep.name}`;
-    select.appendChild(option);
-  });
-  root.prepend(select);
+let url = 'https://api.tvmaze.com/shows/82/episodes'
 
-  // Created and added episode count display
-  const countDisplay = document.createElement("p");
-  root.insertBefore(countDisplay, root.children[2]); // Insert below search
-  updateEpisodeCount(allEpisodes.length, allEpisodes.length);
+async function getEpisodes(params) {
 
-  function updateEpisodeCount(visible, total) {
-    countDisplay.textContent = `Displaying ${visible}/${total} episodes.`;
-  }
+  try {
+    const res = await fetch(url);
 
-  function filterEpisodes(searchTerm) {
-    const lower = searchTerm.toLowerCase();
-    const filtered = allEpisodes.filter((ep) =>
-      ep.name.toLowerCase().includes(lower) ||
-      ep.summary.toLowerCase().includes(lower)
-    );
-    makePageForEpisodes(filtered);
-    updateEpisodeCount(filtered.length, allEpisodes.length);
-  }
-
-  // Search listener
-  searchInput.addEventListener("input", () => {
-    select.value = "all"; // Reset dropdown
-    filterEpisodes(searchInput.value);
-  });
-
-  // Dropdown listener
-  select.addEventListener("change", () => {
-    const selectedId = select.value;
-    if (selectedId === "all") {
-      makePageForEpisodes(allEpisodes);
-      updateEpisodeCount(allEpisodes.length, allEpisodes.length);
-    } else {
-      const selectedEpisode = allEpisodes.find((ep) => ep.id == selectedId);
-      makePageForEpisodes([selectedEpisode]);
-      updateEpisodeCount(1, allEpisodes.length);
+    if (!res.ok) {
+        throw new Error('Network response was not ok ' + res.statusText); 
     }
-    searchInput.value = ""; // Clear search
-  });
-
-  // Initial page load
-  makePageForEpisodes(allEpisodes);
-  updateEpisodeCount(allEpisodes.length, allEpisodes.length);
+    const data = await res.json();
+    return data; // Return filtered episodes
+    } 
+    catch (error) {
+      displayErrorMessage('Sorry, there was an error loading the episodes. Please try again later.');
+  }
 }
 
+
+//Function Setup : To load this 3 functions when page is running.
+async function setup() {
+  const allEpisodes = await getEpisodes(); // Await the promise
+  state.allEpisodes = allEpisodes;
+  makePageForEpisodes(allEpisodes);
+  selector(allEpisodes);
+  userSelection();
+}
+
+// error handling
+function displayErrorMessage(message) {
+  const errorMessageDiv = document.getElementById('error-message');
+  errorMessageDiv.textContent = message;
+  errorMessageDiv.style.display = 'block'; // Show the error message
+}
+
+
+//All global variables defined here
+
+const allEpisodes = getEpisodes();
 const filmCardContainer = document.getElementById("filmCard-container");
+const searchBox = document.getElementById("search-input");
+
+const state = { allEpisodes, searchTerm: "" };
+
+const dropDownSelector = document.getElementById("movie");
+let counter = document.getElementById('counter');
+//Function to display Dropdown Menu
+
+function selector(allEpisodes) {
+  dropDownSelector.innerHTML = `<option value="">All Episodes</option>`;
+  for (let n of allEpisodes) {
+    if (n.name !== "") {
+      const movieSelector = document.createElement("option");
+      movieSelector.setAttribute("value", `${n.name}`);
+      let valOpt = document.createTextNode(`${n.name}`);
+      movieSelector.appendChild(valOpt);
+      dropDownSelector.append(movieSelector);
+    } else {
+      const movieSelector = document.createElement("option");
+      movieSelector.setAttribute("value", "");
+      let valOpt = document.createTextNode(`${n.id} Have no name !!!`);
+      movieSelector.appendChild(valOpt);
+      dropDownSelector.append(movieSelector);
+    }
+  }}
+
 
 function makePageForEpisodes(episodeList) {
+  counter.textContent = `Results:  ${episodeList.length}/${state.allEpisodes.length}`;
   filmCardContainer.innerHTML = "";
-
-  episodeList.forEach(filmData => {
-    const filmCard = document.createElement('div');
-    filmCard.classList.add("film-card");
+  episodeList.forEach(filmData =>{
+    const filmCard = document.createElement('div')
+    filmCard.classList.add("film-card")
 
     const bannerImg = document.createElement('img');
-    bannerImg.src = filmData.image.medium;
-    bannerImg.alt = `${filmData.name} poster`;
+    bannerImg.src =filmData.image.medium
     filmCard.appendChild(bannerImg);
 
     const titleElement = document.createElement('h3');
-    titleElement.textContent = `${filmData.name} - S${filmData.season.toString().padStart(2, "0")}E${filmData.number.toString().padStart(2, "0")}`;
+    titleElement.textContent = filmData.name;
     filmCard.appendChild(titleElement);
 
     const summaryElement = document.createElement('p');
-    summaryElement.textContent = filmData.summary.replace(/<[^>]*>/g, '');
+    summaryElement.textContent = filmData.summary.replace(/<[^>]*>/g, '')
     filmCard.appendChild(summaryElement);
 
     const linkElement = document.createElement('a');
     linkElement.href = filmData.url;
-    linkElement.textContent = "Re-direct to www.tvmaze.com";
-    linkElement.classList.add('redirect');
-    linkElement.target = "_blank";
+    linkElement.textContent = "Re-direct to www.tvmaze.com"
+    linkElement.classList.add('redirect')
     filmCard.appendChild(linkElement);
 
-    filmCardContainer.appendChild(filmCard);
+    filmCardContainer.appendChild(filmCard)
+
+  })
+
+}
+//Render function : to render based on search
+function render(){
+  const searchedMovie = state.allEpisodes.filter((film)=>film.name.toLowerCase().includes(state.searchTerm.toLocaleLowerCase()));
+  counter.textContent = `Results: ${searchedMovie.length}/73`;
+  makePageForEpisodes(searchedMovie);
+}
+function searchRes(event){
+  state.searchTerm = event.target.value;
+  render();
+}
+searchBox.addEventListener("input", searchRes);
+
+
+//userSelection Function to render based on Option choice from dropdown
+function userSelection() {
+  dropDownSelector.addEventListener("change", () => {
+    const selectedValue = dropDownSelector.value.toLowerCase();
+    const filteredEpisodes = state.allEpisodes.filter((film) =>film.name.toLowerCase().includes(selectedValue) || selectedValue === "");
+    makePageForEpisodes(filteredEpisodes);
+    counter.textContent = `Results: ${filteredEpisodes.length}/${state.allEpisodes.length}`;
   });
+
 }
 
-document.addEventListener("DOMContentLoaded", setup);
+window.onload = setup;
